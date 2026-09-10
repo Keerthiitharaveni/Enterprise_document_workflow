@@ -37,6 +37,9 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    # Clerk's stable external identifier.  It is nullable only to support
+    # existing Day 1 database rows until they are linked to a Clerk account.
+    clerk_user_id: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     role: Mapped[UserRole] = mapped_column(SqlEnum(UserRole, name="user_role"), nullable=False)

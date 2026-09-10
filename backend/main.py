@@ -11,6 +11,9 @@ load_dotenv(Path(__file__).with_name(".env"))
 
 from database import Base, engine  # noqa: E402
 import models  # noqa: F401, E402  # Register ORM models on Base.metadata before create_all.
+from routers.ai_analysis import router as ai_analysis_router  # noqa: E402
+from routers.ai_test import router as ai_test_router  # noqa: E402
+from routers.requests import router as requests_router  # noqa: E402
 
 
 app = FastAPI(title="Enterprise Approval Workflow API")
@@ -22,6 +25,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(ai_analysis_router)
+app.include_router(ai_test_router)
+app.include_router(requests_router)
 
 
 @app.on_event("startup")
