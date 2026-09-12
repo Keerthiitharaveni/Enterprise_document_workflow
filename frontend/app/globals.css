@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background: #EEEEF0;
+  color: #151A21;
+}
+
+::selection {
+  background: #2F5D50;
+  color: #fff;
+}
+
+* {
+  border-color: #D8DADF;
+}
+
+/* thin scrollbar for the routing rail / tables */
+.rail-scroll::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+.rail-scroll::-webkit-scrollbar-thumb {
+  background: #D8DADF;
+  border-radius: 4px;
+}
