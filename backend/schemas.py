@@ -1,6 +1,6 @@
 """Pydantic schemas used by the request API."""
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Literal
 
@@ -12,15 +12,63 @@ class RequestCreate(BaseModel):
 
     title: str = Field(min_length=1, max_length=500)
     description: str | None = None
-    amount: Decimal = Field(gt=0)
-    request_type: Literal["leave", "purchase", "capex", "travel"] = "purchase"
-    vendor: str | None = Field(default=None, max_length=255)
+
+    # Amount is optional because Leave requests do not have
+    # a monetary amount. Purchase, CapEx and Travel require it.
+    amount: Decimal | None = Field(default=None, gt=0)
+
+    request_type: Literal[
+        "leave",
+        "purchase",
+        "capex",
+        "travel",
+    ] = "purchase"
+
+    vendor: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+
+    # Leave-specific fields.
+    leave_type: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    from_date: date | None = None
+
+    to_date: date | None = None
+
+    number_of_days: int | None = Field(
+        default=None,
+        gt=0,
+    )
+
+    reason: str | None = Field(
+        default=None,
+        max_length=2000,
+    )
+
+    additional_notes: str | None = Field(
+        default=None,
+        max_length=2000,
+    )
+
+    # Exact manager who should receive/approve this Leave request.
+    manager_email: str | None = Field(
+        default=None,
+        max_length=320,
+    )
 
 
 class RequestDecision(BaseModel):
     """An approver's decision for one assigned approval step."""
 
-    decision: Literal["approved", "rejected"]
+    decision: Literal[
+        "approved",
+        "rejected",
+    ]
+
     notes: str | None = None
 
 
@@ -54,12 +102,28 @@ class RequestCreateResponse(BaseModel):
     id: int
     title: str
     description: str | None
-    amount: Decimal
+    amount: Decimal | None
     status: str
     created_by: int
     created_at: datetime
+
     request_type: str
     vendor: str | None
+
+    # Leave-specific fields.
+    leave_type: str | None
+    from_date: date | None
+    to_date: date | None
+    number_of_days: int | None
+    reason: str | None
+    additional_notes: str | None
+    manager_email: str | None
+
+    # Supporting document metadata.
+    document_name: str | None
+    document_type: str | None
+    document_path: str | None
+
     created_by_name: str
     current_stage: str
     current_approver_name: str | None
@@ -75,12 +139,28 @@ class RequestListItem(BaseModel):
     id: int
     title: str
     description: str | None
-    amount: Decimal
+    amount: Decimal | None
     status: str
     created_by: int
     created_at: datetime
+
     request_type: str
     vendor: str | None
+
+    # Leave-specific fields.
+    leave_type: str | None
+    from_date: date | None
+    to_date: date | None
+    number_of_days: int | None
+    reason: str | None
+    additional_notes: str | None
+    manager_email: str | None
+
+    # Supporting document metadata.
+    document_name: str | None
+    document_type: str | None
+    document_path: str | None
+
     created_by_name: str
     current_stage: str
     current_approver_name: str | None
