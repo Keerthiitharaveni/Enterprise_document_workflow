@@ -53,7 +53,7 @@ export async function getAuthenticatedUserProfile() {
   if (!user) return null;
 
   const appRole = normalizeRole(
-    user.publicMetadata?.role || user.privateMetadata?.role || user.unsafeMetadata?.role
+    user.publicMetadata?.role || user.privateMetadata?.role
   );
 
   return {
@@ -64,7 +64,7 @@ export async function getAuthenticatedUserProfile() {
     email: user.emailAddresses?.[0]?.emailAddress || "",
     imageUrl: user.imageUrl || "",
     role: appRole,
-    department: user.publicMetadata?.department || user.privateMetadata?.department || user.unsafeMetadata?.department || null,
+    department: user.publicMetadata?.department || user.privateMetadata?.department || null,
   };
 }
 

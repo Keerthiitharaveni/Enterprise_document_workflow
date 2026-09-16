@@ -20,6 +20,7 @@ export default function RequestTable({ requests, basePath, emptyLabel }) {
             <th className="px-4 py-3 font-medium">Type</th>
             <th className="px-4 py-3 font-medium">Amount</th>
             <th className="px-4 py-3 font-medium">Status</th>
+            <th className="px-4 py-3 font-medium">Current stage</th>
             <th className="px-4 py-3 font-medium">Submitted</th>
           </tr>
         </thead>
@@ -39,6 +40,12 @@ export default function RequestTable({ requests, basePath, emptyLabel }) {
               </td>
               <td className="px-4 py-3">
                 <StatusBadge status={r.status} />
+              </td>
+              <td className="px-4 py-3 text-ink/70">
+                <p>{r.current_stage || "—"}</p>
+                {r.current_approver_name ? (
+                  <p className="text-xs text-slate">{r.current_approver_name} · {r.current_step_order}/{r.total_approval_steps}</p>
+                ) : null}
               </td>
               <td className="px-4 py-3 text-ink/70">
                 {new Date(r.created_at).toLocaleDateString("en-IN", {

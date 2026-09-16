@@ -1,13 +1,4 @@
-// SmartFlow — routing rules
-//
-// This is the one file that encodes "which role approves which request type,
-// and in what order." If Deloitte asks "what happens to a CapEx request",
-// the answer lives here, not scattered across pages.
-//
-// NOTE: the backend is the source of truth once request_type + department
-// routing exist server-side. This config lets the frontend render the right
-// stepper/labels immediately, and should be kept identical to the backend's
-// routing table so the UI never claims a step that the API can't produce.
+// Role labels and request-type copy shared by the role-specific interfaces.
 
 export const ROLES = {
   requester: { key: "requester", label: "Requester", accent: "pine" },
@@ -17,57 +8,33 @@ export const ROLES = {
   admin: { key: "admin", label: "Admin", accent: "brick" },
 };
 
-// request_type -> ordered list of approver roles (Requester is the
-// originator, never an approval step, so it's excluded here)
 export const ROUTING_CHAINS = {
-  leave: {
-    label: "Leave Request",
-    description: "Time-off request. Single approval — your manager signs off.",
-    chain: ["manager"],
-  },
-  purchase: {
-    label: "Purchase Request",
-    description:
-      "Goods or services purchase. Routes through your manager, then Finance for budget check, then Procurement to place the order.",
-    chain: ["manager", "finance", "procurement"],
-  },
-  capex: {
-    label: "CapEx Request",
-    description:
-      "Capital expenditure (equipment, infrastructure, long-term assets). Routes through your manager, Finance, then Admin for final sign-off.",
-    chain: ["manager", "finance", "admin"],
-  },
-  travel: {
-    label: "Travel Request",
-    description:
-      "Business travel booking. Routes through your manager, then Finance for cost approval.",
-    chain: ["manager", "finance"],
-  },
+  leave: { label: "Leave Request", description: "Manager approval for requests below the approval threshold.", chain: ["manager"] },
+  purchase: { label: "Purchase Request", description: "Manager first; high-value purchases then require Procurement.", chain: ["manager", "procurement"] },
+  capex: { label: "CapEx Request", description: "Manager first; high-value capital expenditure then requires Finance.", chain: ["manager", "finance"] },
+  travel: { label: "Travel Request", description: "Manager first; high-value travel then requires Finance.", chain: ["manager", "finance"] },
 };
 
 export function getChainForType(requestType) {
   return ROUTING_CHAINS[requestType]?.chain ?? [];
 }
 
-// Given a request (with request_type + approval_steps[{role, decision}])
-// and a role, is that role the current pending approver for this request?
+// The backend supplies the current stage. The UI never infers authority from
+// a request type or a client-side approver ID.
 export function isRolesTurn(request, role) {
-  if (!request?.approval_steps?.length) return false;
-  const chain = getChainForType(request.request_type);
-  const firstPendingIndex = request.approval_steps.findIndex(
-    (s) => s.decision === "pending"
-  );
-  if (firstPendingIndex === -1) return false;
-  return chain[firstPendingIndex] === role;
+  return request?.status === "pending" && request?.current_approver_role === role;
 }
 
 export function stepStatusList(request) {
-  const chain = getChainForType(request.request_type);
-  return chain.map((role, i) => ({
-    role,
-    label: ROLES[role]?.label ?? role,
-    status: request.approval_steps?.[i]?.decision ?? "pending",
-    approverName: request.approval_steps?.[i]?.approver_name ?? null,
-    decidedAt: request.approval_steps?.[i]?.decided_at ?? null,
+  return (request?.approval_steps || []).map((step) => ({
+    id: step.id,
+    role: step.approver_application_role || "approver",
+    label: ROLES[step.approver_application_role]?.label || "Approver",
+    status: step.decision,
+    approverName: step.approver_name,
+    decidedAt: step.decided_at,
+    notes: step.decision_notes,
+    isCurrent: step.is_current,
+    order: step.step_order,
   }));
 }

@@ -13,12 +13,13 @@ class RequestCreate(BaseModel):
     title: str = Field(min_length=1, max_length=500)
     description: str | None = None
     amount: Decimal = Field(gt=0)
+    request_type: Literal["leave", "purchase", "capex", "travel"] = "purchase"
+    vendor: str | None = Field(default=None, max_length=255)
 
 
 class RequestDecision(BaseModel):
     """An approver's decision for one assigned approval step."""
 
-    approver_id: int = Field(gt=0)
     decision: Literal["approved", "rejected"]
     notes: str | None = None
 
@@ -28,8 +29,13 @@ class ApprovalStepResponse(BaseModel):
 
     id: int
     approver_id: int
+    approver_name: str
+    approver_application_role: str | None
     step_order: int
     decision: str
+    decision_notes: str | None
+    decided_at: datetime | None
+    is_current: bool
 
 
 class AuditLogResponse(BaseModel):
@@ -52,6 +58,14 @@ class RequestCreateResponse(BaseModel):
     status: str
     created_by: int
     created_at: datetime
+    request_type: str
+    vendor: str | None
+    created_by_name: str
+    current_stage: str
+    current_approver_name: str | None
+    current_approver_role: str | None
+    current_step_order: int | None
+    total_approval_steps: int
     approval_steps: list[ApprovalStepResponse]
 
 
@@ -65,4 +79,22 @@ class RequestListItem(BaseModel):
     status: str
     created_by: int
     created_at: datetime
+    request_type: str
+    vendor: str | None
+    created_by_name: str
+    current_stage: str
+    current_approver_name: str | None
+    current_approver_role: str | None
+    current_step_order: int | None
+    total_approval_steps: int
     approval_steps: list[ApprovalStepResponse]
+
+
+class UserResponse(BaseModel):
+    """Safe user information for the existing admin users screen."""
+
+    id: int
+    name: str
+    email: str
+    role: str
+    application_role: str | None

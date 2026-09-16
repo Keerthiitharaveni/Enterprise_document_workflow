@@ -20,6 +20,16 @@ class UserRole(str, Enum):
     ADMIN = "admin"
 
 
+class ApplicationRole(str, Enum):
+    """The Clerk application role used to distinguish kinds of approvers."""
+
+    REQUESTER = "requester"
+    MANAGER = "manager"
+    FINANCE = "finance"
+    PROCUREMENT = "procurement"
+    ADMIN = "admin"
+
+
 class RequestStatus(str, Enum):
     DRAFT = "draft"
     PENDING = "pending"
@@ -43,6 +53,9 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     role: Mapped[UserRole] = mapped_column(SqlEnum(UserRole, name="user_role"), nullable=False)
+    # Keep the existing database authorization enum while retaining the Clerk
+    # application role needed to route manager/finance/procurement work.
+    application_role: Mapped[str | None] = mapped_column(String(32), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # The reverse sides of the three user foreign keys below.
